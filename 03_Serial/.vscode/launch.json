@@ -1,20 +1,31 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
             "type": "stlinkgdbtarget",
             "request": "launch",
-            "name": "STM32Cube: STM32 Launch ST-Link GDB Server",
+            "name": "STM326570-DK Debug",
             "origin": "snippet",
             "cwd": "${workspaceFolder}",
             "preBuild": "${command:st-stm32-ide-debug-launch.build}",
-            "runEntry": "main",
+            "deviceName": "STM32N647B0H3Q",
+            "deviceCore": "Cortex-M55",
+            "runEntry": "BOOT_Application", // Set in BOOT_Application
+            "svdPath": "D:/Program Files/STM32CubeCLT_1.20.0/STMicroelectronics_CMSIS_SVD/STM32N657.svd", // Replace with your .svd path
             "imagesAndSymbols": [
                 {
-                    "imageFileName": "${command:st-stm32-ide-debug-launch.get-projects-binary-from-context1}"
+                    "symbolFileName": "${workspaceFolder}/FSBL/build/03_Serial_FSBL.elf", // Replace this with your path and your_FSBL.elf symbol
+                    "imageFileName": "${workspaceFolder}/FSBL/build/FSBL-trusted.elf", // Replace this with your path and your_FSBL.elf image
+                },
+                {
+                    "symbolFileName": "${workspaceFolder}/Appli/build/03_Serial_Appli.elf", // Replace this with your path and your_Appli.elf symbol
+                    "imageFileName": "${workspaceFolder}/Appli/build/03_Serial_Appli.elf",
+                }
+            ],
+            "serverExtLoader": [
+                {
+                    "loader": "D:/Program Files/STM32CubeProgrammer/bin/ExternalLoader/MX25UM25645G_ATK-CNN647B_ExtMemLoader.stldr", // Replace with your external loader path
+                    "initialize": false
                 }
             ]
         }
