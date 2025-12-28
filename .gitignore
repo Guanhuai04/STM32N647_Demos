@@ -40,5 +40,9 @@
 # debug information files
 *.dwo
 
-**/.vscode/
+# IDEs and editors
 **/.cache/
+
+**/.vscode/*
+!**/.vscode/
+!**/.vscode/launch.json
