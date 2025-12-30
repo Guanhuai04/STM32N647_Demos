@@ -19,6 +19,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+#include "stm32n6xx_hal_dma.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdint.h>
@@ -43,15 +45,18 @@
 /* Private variables ---------------------------------------------------------*/
 
 UART_HandleTypeDef huart1;
+DMA_HandleTypeDef handle_GPDMA1_Channel1;
+DMA_HandleTypeDef handle_GPDMA1_Channel0;
 
 XSPI_HandleTypeDef hxspi1;
 
 /* USER CODE BEGIN PV */
-uint8_t received_data[2];
+__attribute__((aligned(32))) uint8_t received_data[32];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 static void MX_GPIO_Init(void);
+static void MX_GPDMA1_Init(void);
 static void MX_XSPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void SystemIsolation_Config(void);
@@ -94,13 +99,15 @@ int main(void) {
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_GPDMA1_Init();
   MX_XSPI1_Init();
   MX_USART1_UART_Init();
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */
   // char msg[] = "Hello from Secure World!\r\n";
-
-  HAL_UART_Receive_IT(&huart1, received_data, 2);
+  // HAL_UART_Receive_IT(&huart1, received_data, 2);
+  HAL_UARTEx_ReceiveToIdle_DMA(&huart1, received_data, sizeof(received_data));
+  __HAL_DMA_DISABLE_IT(&handle_GPDMA1_Channel0, DMA_IT_HT);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -116,6 +123,33 @@ int main(void) {
 }
 
 /**
+ * @brief GPDMA1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_GPDMA1_Init(void) {
+  /* USER CODE BEGIN GPDMA1_Init 0 */
+
+  /* USER CODE END GPDMA1_Init 0 */
+
+  /* Peripheral clock enable */
+  __HAL_RCC_GPDMA1_CLK_ENABLE();
+
+  /* GPDMA1 interrupt Init */
+  HAL_NVIC_SetPriority(GPDMA1_Channel0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(GPDMA1_Channel0_IRQn);
+  HAL_NVIC_SetPriority(GPDMA1_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(GPDMA1_Channel1_IRQn);
+
+  /* USER CODE BEGIN GPDMA1_Init 1 */
+
+  /* USER CODE END GPDMA1_Init 1 */
+  /* USER CODE BEGIN GPDMA1_Init 2 */
+
+  /* USER CODE END GPDMA1_Init 2 */
+}
+
+/**
  * @brief RIF Initialization Function
  * @param None
  * @retval None
@@ -128,10 +162,32 @@ static void SystemIsolation_Config(void) {
   /* set all required IPs as secure privileged */
   __HAL_RCC_RIFSC_CLK_ENABLE();
 
+  /*RIMC configuration*/
+  RIMC_MasterConfig_t RIMC_master = {0};
+  RIMC_master.MasterCID = RIF_CID_0;
+  RIMC_master.SecPriv = RIF_ATTRIBUTE_SEC | RIF_ATTRIBUTE_NPRIV;
+  HAL_RIF_RIMC_ConfigMasterAttributes(RIF_MASTER_INDEX_DMA2D, &RIMC_master);
+
   /* RIF-Aware IPs Config */
 
   /* set up PWR configuration */
   HAL_PWR_ConfigAttributes(PWR_ITEM_0, PWR_SEC_NPRIV);
+
+  /* set up GPDMA configuration */
+  /* set GPDMA1 channel 0 used by USART1 */
+  if (HAL_DMA_ConfigChannelAttributes(&handle_GPDMA1_Channel0,
+                                      DMA_CHANNEL_SEC | DMA_CHANNEL_PRIV |
+                                          DMA_CHANNEL_SRC_SEC |
+                                          DMA_CHANNEL_DEST_SEC) != HAL_OK) {
+    Error_Handler();
+  }
+  /* set GPDMA1 channel 1 used by USART1 */
+  if (HAL_DMA_ConfigChannelAttributes(&handle_GPDMA1_Channel1,
+                                      DMA_CHANNEL_SEC | DMA_CHANNEL_PRIV |
+                                          DMA_CHANNEL_SRC_SEC |
+                                          DMA_CHANNEL_DEST_SEC) != HAL_OK) {
+    Error_Handler();
+  }
 
   /* set up GPIO configuration */
   HAL_GPIO_ConfigPinAttributes(GPIOE, GPIO_PIN_5,
@@ -341,17 +397,31 @@ static void MX_GPIO_Init(void) {
 /* USER CODE BEGIN 4 */
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
-  HAL_UART_Transmit_IT(huart, received_data, 2);
+  if (huart == &huart1) {
+    HAL_UART_Transmit_IT(huart, received_data, 2);
 
-  GPIO_PinState state =
-      (received_data[1] == '1') ? GPIO_PIN_RESET : GPIO_PIN_SET;
+    GPIO_PinState state =
+        (received_data[1] == '1') ? GPIO_PIN_RESET : GPIO_PIN_SET;
 
-  if (received_data[0] == 'R') {
-    HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, state);
-  } else if (received_data[0] == 'G') {
-    HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, state);
+    if (received_data[0] == 'R') {
+      HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, state);
+    } else if (received_data[0] == 'G') {
+      HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, state);
+    }
+    HAL_UART_Receive_IT(huart, received_data, 2);
   }
-  HAL_UART_Receive_IT(huart, received_data, 2);
+}
+
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef* huart, uint16_t Size) {
+  if (huart == &huart1) {
+    // important: invalidate the D-Cache for the received buffer to ensure data
+    SCB_InvalidateDCache_by_Addr(received_data, sizeof(received_data));
+    SCB_CleanDCache_by_Addr(received_data, sizeof(received_data));
+
+    HAL_UART_Transmit_DMA(&huart1, received_data, Size);
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart1, received_data, sizeof(received_data));
+    __HAL_DMA_DISABLE_IT(&handle_GPDMA1_Channel0, DMA_IT_HT);
+  }
 }
 
 /* USER CODE END 4 */
