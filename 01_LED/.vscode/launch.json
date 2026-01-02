@@ -10,6 +10,7 @@
             "preBuild": "${command:st-stm32-ide-debug-launch.build}",
             "deviceName": "STM32N647B0H3Q",
             "deviceCore": "Cortex-M55",
+            "deviceTrustzone": "Secure",
             "runEntry": "BOOT_Application", // Set in BOOT_Application
             "svdPath": "D:/Program Files/STM32CubeCLT_1.20.0/STMicroelectronics_CMSIS_SVD/STM32N657.svd", // Replace with your .svd path
             "imagesAndSymbols": [
@@ -19,7 +20,7 @@
                 },
                 {
                     "symbolFileName": "${workspaceFolder}/Appli/build/01_LED_Appli.elf", // Replace this with your path and your_Appli.elf symbol
-                    "imageFileName": "${workspaceFolder}/Appli/build/01_LED_Appli.elf",
+                    // "imageFileName": "${workspaceFolder}/Appli/build/Appli-trusted.elf",
                 }
             ],
             "serverExtLoader": [
@@ -27,7 +28,7 @@
                     "loader": "D:/Program Files/STM32CubeProgrammer/bin/ExternalLoader/MX25UM25645G_ATK-CNN647B_ExtMemLoader.stldr", // Replace with your external loader path
                     "initialize": false
                 }
-            ]
+            ],
         }
     ]
 }

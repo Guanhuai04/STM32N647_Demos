@@ -1,25 +1,26 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : extmem_manager.c
-  * @version        : 1.0.0
-  * @brief          : This file implements the extmem configuration
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : extmem_manager.c
+ * @version        : 1.0.0
+ * @brief          : This file implements the extmem configuration
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
 #include "extmem_manager.h"
+
 #include <string.h>
 
 /* USER CODE BEGIN Includes */
@@ -51,12 +52,10 @@
 /* USER CODE END 1 */
 
 /**
-  * Init External memory manager
-  * @retval None
-  */
-void MX_EXTMEM_MANAGER_Init(void)
-{
-
+ * Init External memory manager
+ * @retval None
+ */
+void MX_EXTMEM_MANAGER_Init(void) {
   /* USER CODE BEGIN MX_EXTMEM_Init_PreTreatment */
 
   /* USER CODE END MX_EXTMEM_Init_PreTreatment */
@@ -66,10 +65,10 @@ void MX_EXTMEM_MANAGER_Init(void)
 
   /* EXTMEMORY_1 */
   extmem_list_config[0].MemType = EXTMEM_NOR_SFDP;
-  extmem_list_config[0].Handle = (void*)&hxspi1;
+  extmem_list_config[0].Handle = (void*)&hxspi2;
   extmem_list_config[0].ConfigType = EXTMEM_LINK_CONFIG_8LINES;
 
-  EXTMEM_Init(EXTMEMORY_1, HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_XSPI1));
+  EXTMEM_Init(EXTMEMORY_1, HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_XSPI2));
 
   /* USER CODE BEGIN MX_EXTMEM_Init_PostTreatment */
 
