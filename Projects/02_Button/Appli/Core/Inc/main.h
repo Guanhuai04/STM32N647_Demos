@@ -81,13 +81,9 @@ void Error_Handler(void);
 #define KEY_RIGHT_Pin GPIO_PIN_6
 #define KEY_RIGHT_GPIO_Port GPIOC
 #define KEY_RIGHT_EXTI_IRQn EXTI6_IRQn
-#define LED_GREEN_Pin GPIO_PIN_10
-#define LED_GREEN_GPIO_Port GPIOE
 #define KEY_UP_Pin GPIO_PIN_13
 #define KEY_UP_GPIO_Port GPIOC
 #define KEY_UP_EXTI_IRQn EXTI13_IRQn
-#define LED_RED_Pin GPIO_PIN_10
-#define LED_RED_GPIO_Port GPIOG
 #define KEY_LEFT_Pin GPIO_PIN_11
 #define KEY_LEFT_GPIO_Port GPIOG
 #define KEY_LEFT_EXTI_IRQn EXTI11_IRQn

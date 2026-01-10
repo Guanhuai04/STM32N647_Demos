@@ -23,26 +23,26 @@
 #include "bsp_led.h"
 #include "stm32n6xx.h"
 
-static GPIO_TypeDef* LED_PORT[LEDn] = {LED1_GPIO_PORT, LED2_GPIO_PORT};
+static GPIO_TypeDef *LED_PORT[LEDn] = {BSP_LED1_GPIO_PORT, BSP_LED2_GPIO_PORT};
 
-static const uint32_t LED_PIN[LEDn] = {LED1_GPIO_PIN, LED2_GPIO_PIN};
+static const uint32_t LED_PIN[LEDn] = {BSP_LED1_GPIO_PIN, BSP_LED2_GPIO_PIN};
 
 void BSP_LED_Init(Led_TypeDef Led) {
   /* Enable the GPIO_LED clock */
   uint8_t ret = 1;
   switch (Led) {
-    case LED1:
-      HAL_PWREx_EnableVddIO2();
-      LED1_GPIO_CLK_ENABLE();
-      break;
+  case LED1:
+    HAL_PWREx_EnableVddIO2();
+    BSP_LED1_GPIO_CLK_ENABLE();
+    break;
 
-    case LED2:
-      LED2_GPIO_CLK_ENABLE();
-      break;
+  case LED2:
+    BSP_LED2_GPIO_CLK_ENABLE();
+    break;
 
-    default:
-      ret = 0;
-      break;
+  default:
+    ret = 0;
+    break;
   }
 
   if (ret) {

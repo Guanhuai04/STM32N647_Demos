@@ -18,11 +18,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
-#include "stm32n6xx_hal_gpio.h"
+#include "gpio.h"
+#include "xspim.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "bsp_key.h"
+#include "bsp_led.h"
 
 /* USER CODE END Includes */
 
@@ -43,15 +45,11 @@
 
 /* Private variables ---------------------------------------------------------*/
 
-XSPI_HandleTypeDef hxspi1;
-
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
-static void MX_GPIO_Init(void);
-static void MX_XSPI1_Init(void);
 static void SystemIsolation_Config(void);
 /* USER CODE BEGIN PFP */
 
@@ -59,8 +57,8 @@ static void SystemIsolation_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#define PERIOD_MIN 200
-#define PERIOD_MAX 2000
+#define PERIOD_MIN      200
+#define PERIOD_MAX      2000
 #define PERIOD_INTERVAL 200
 
 static volatile uint32_t red_period_ms = 1000;
@@ -72,6 +70,7 @@ static volatile uint32_t green_period_ms = 1000;
  * @retval int
  */
 int main(void) {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -97,9 +96,11 @@ int main(void) {
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_XSPI1_Init();
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */
+  BSP_LED_Init(LED_GREEN);
+  BSP_LED_Init(LED_RED);
+
   uint32_t green_last_tick = HAL_GetTick();
   uint32_t red_last_tick = HAL_GetTick();
   /* USER CODE END 2 */
@@ -111,11 +112,11 @@ int main(void) {
 
     /* USER CODE BEGIN 3 */
     if (HAL_GetTick() - green_last_tick >= green_period_ms) {
-      HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
+      BSP_LED_Toggle(LED_GREEN);
       green_last_tick = HAL_GetTick();
     }
     if (HAL_GetTick() - red_last_tick >= red_period_ms) {
-      HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+      BSP_LED_Toggle(LED_RED);
       red_last_tick = HAL_GetTick();
     }
   }
@@ -128,6 +129,7 @@ int main(void) {
  * @retval None
  */
 static void SystemIsolation_Config(void) {
+
   /* USER CODE BEGIN RIF_Init 0 */
 
   /* USER CODE END RIF_Init 0 */
@@ -153,52 +155,6 @@ static void SystemIsolation_Config(void) {
                                GPIO_PIN_SEC | GPIO_PIN_NPRIV);
   HAL_GPIO_ConfigPinAttributes(GPIOG, GPIO_PIN_11,
                                GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPION, GPIO_PIN_0,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPION, GPIO_PIN_1,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPION, GPIO_PIN_2,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPION, GPIO_PIN_3,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPION, GPIO_PIN_4,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPION, GPIO_PIN_5,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPION, GPIO_PIN_6,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPION, GPIO_PIN_8,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPION, GPIO_PIN_9,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPION, GPIO_PIN_10,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPION, GPIO_PIN_11,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOO, GPIO_PIN_0,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOO, GPIO_PIN_2,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOO, GPIO_PIN_4,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOO, GPIO_PIN_5,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOP, GPIO_PIN_0,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOP, GPIO_PIN_1,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOP, GPIO_PIN_2,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOP, GPIO_PIN_3,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOP, GPIO_PIN_4,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOP, GPIO_PIN_5,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOP, GPIO_PIN_6,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOP, GPIO_PIN_7,
-                               GPIO_PIN_SEC | GPIO_PIN_NPRIV);
 
   /* USER CODE BEGIN RIF_Init 1 */
 
@@ -208,186 +164,32 @@ static void SystemIsolation_Config(void) {
   /* USER CODE END RIF_Init 2 */
 }
 
-/**
- * @brief XSPI1 Initialization Function
- * @param None
- * @retval None
- */
-static void MX_XSPI1_Init(void) {
-  /* USER CODE BEGIN XSPI1_Init 0 */
-
-  /* USER CODE END XSPI1_Init 0 */
-
-  XSPIM_CfgTypeDef sXspiManagerCfg = {0};
-  XSPI_HyperbusCfgTypeDef sHyperBusCfg = {0};
-
-  /* USER CODE BEGIN XSPI1_Init 1 */
-
-  /* USER CODE END XSPI1_Init 1 */
-  /* XSPI1 parameter configuration*/
-  hxspi1.Instance = XSPI1;
-  hxspi1.Init.FifoThresholdByte = 4;
-  hxspi1.Init.MemoryMode = HAL_XSPI_SINGLE_MEM;
-  hxspi1.Init.MemoryType = HAL_XSPI_MEMTYPE_HYPERBUS;
-  hxspi1.Init.MemorySize = HAL_XSPI_SIZE_256MB;
-  hxspi1.Init.ChipSelectHighTimeCycle = 2;
-  hxspi1.Init.FreeRunningClock = HAL_XSPI_FREERUNCLK_DISABLE;
-  hxspi1.Init.ClockMode = HAL_XSPI_CLOCK_MODE_0;
-  hxspi1.Init.WrapSize = HAL_XSPI_WRAP_32_BYTES;
-  hxspi1.Init.ClockPrescaler = 1 - 1;
-  hxspi1.Init.SampleShifting = HAL_XSPI_SAMPLE_SHIFT_NONE;
-  hxspi1.Init.DelayHoldQuarterCycle = HAL_XSPI_DHQC_DISABLE;
-  hxspi1.Init.ChipSelectBoundary = HAL_XSPI_BONDARYOF_NONE;
-  hxspi1.Init.MaxTran = 0;
-  hxspi1.Init.Refresh = 0;
-  hxspi1.Init.MemorySelect = HAL_XSPI_CSSEL_NCS1;
-  if (HAL_XSPI_Init(&hxspi1) != HAL_OK) {
-    Error_Handler();
-  }
-  sXspiManagerCfg.nCSOverride = HAL_XSPI_CSSEL_OVR_NCS1;
-  sXspiManagerCfg.IOPort = HAL_XSPIM_IOPORT_1;
-  sXspiManagerCfg.Req2AckTime = 1;
-  if (HAL_XSPIM_Config(&hxspi1, &sXspiManagerCfg,
-                       HAL_XSPI_TIMEOUT_DEFAULT_VALUE) != HAL_OK) {
-    Error_Handler();
-  }
-  sHyperBusCfg.RWRecoveryTimeCycle = 7;
-  sHyperBusCfg.AccessTimeCycle = 7;
-  sHyperBusCfg.WriteZeroLatency = HAL_XSPI_LATENCY_ON_WRITE;
-  sHyperBusCfg.LatencyMode = HAL_XSPI_VARIABLE_LATENCY;
-  if (HAL_XSPI_HyperbusCfg(&hxspi1, &sHyperBusCfg,
-                           HAL_XSPI_TIMEOUT_DEFAULT_VALUE) != HAL_OK) {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN XSPI1_Init 2 */
-
-  /* USER CODE END XSPI1_Init 2 */
-}
-
-/**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
-static void MX_GPIO_Init(void) {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  /* USER CODE BEGIN MX_GPIO_Init_1 */
-
-  /* USER CODE END MX_GPIO_Init_1 */
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOP_CLK_ENABLE();
-  __HAL_RCC_GPIOO_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin : KEY_DOWN_Pin */
-  GPIO_InitStruct.Pin = KEY_DOWN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(KEY_DOWN_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : KEY_RIGHT_Pin */
-  GPIO_InitStruct.Pin = KEY_RIGHT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(KEY_RIGHT_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LED_GREEN_Pin */
-  GPIO_InitStruct.Pin = LED_GREEN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_GREEN_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : KEY_UP_Pin */
-  GPIO_InitStruct.Pin = KEY_UP_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(KEY_UP_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LED_RED_Pin */
-  GPIO_InitStruct.Pin = LED_RED_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_RED_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : KEY_LEFT_Pin */
-  GPIO_InitStruct.Pin = KEY_LEFT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(KEY_LEFT_GPIO_Port, &GPIO_InitStruct);
-
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(KEY_DOWN_EXTI_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(KEY_DOWN_EXTI_IRQn);
-
-  HAL_NVIC_SetPriority(KEY_RIGHT_EXTI_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(KEY_RIGHT_EXTI_IRQn);
-
-  HAL_NVIC_SetPriority(KEY_LEFT_EXTI_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(KEY_LEFT_EXTI_IRQn);
-
-  HAL_NVIC_SetPriority(KEY_UP_EXTI_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(KEY_UP_EXTI_IRQn);
-
-  /* USER CODE BEGIN MX_GPIO_Init_2 */
-
-  /* USER CODE END MX_GPIO_Init_2 */
-}
-
 /* USER CODE BEGIN 4 */
 
-void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin) {
-  static uint32_t last_tick = 0;
-  uint32_t current_tick = HAL_GetTick();
-  if (current_tick - last_tick < 20) return;
-  last_tick = current_tick;
-
-  switch (GPIO_Pin) {
-    case KEY_LEFT_Pin:
-      if (green_period_ms > PERIOD_MIN) {
-        green_period_ms -= PERIOD_INTERVAL;
-      }
-      break;
-    case KEY_DOWN_Pin:
-      if (red_period_ms > PERIOD_MIN) {
-        red_period_ms -= PERIOD_INTERVAL;
-      }
-      break;
-    case KEY_RIGHT_Pin:
-      if (green_period_ms < PERIOD_MAX) {
-        green_period_ms += PERIOD_INTERVAL;
-      }
-      break;
-    default:
-      break;
-  }
-}
-
-void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
-  static uint32_t last_tick = 0;
-  uint32_t current_tick = HAL_GetTick();
-  if (current_tick - last_tick < 20) return;
-  last_tick = current_tick;
-
-  switch (GPIO_Pin) {
-    case KEY_UP_Pin:
-      if (red_period_ms < PERIOD_MAX) {
-        red_period_ms += PERIOD_INTERVAL;
-      }
-      break;
-    default:
-      break;
+void BSP_KEY_Callback(Key_TypeDef Key) {
+  switch (Key) {
+  case KEY_UP:
+    if (green_period_ms + PERIOD_INTERVAL <= PERIOD_MAX) {
+      green_period_ms += PERIOD_INTERVAL;
+    }
+    break;
+  case KEY_DOWN:
+    if (green_period_ms - PERIOD_INTERVAL >= PERIOD_MIN) {
+      green_period_ms -= PERIOD_INTERVAL;
+    }
+    break;
+  case KEY_RIGHT:
+    if (red_period_ms + PERIOD_INTERVAL <= PERIOD_MAX) {
+      red_period_ms += PERIOD_INTERVAL;
+    }
+    break;
+  case KEY_LEFT:
+    if (red_period_ms - PERIOD_INTERVAL >= PERIOD_MIN) {
+      red_period_ms -= PERIOD_INTERVAL;
+    }
+    break;
+  default:
+    break;
   }
 }
 
@@ -413,7 +215,7 @@ void Error_Handler(void) {
  * @param  line: assert_param error line source number
  * @retval None
  */
-void assert_failed(uint8_t* file, uint32_t line) {
+void assert_failed(uint8_t *file, uint32_t line) {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line
      number, ex: printf("Wrong parameters value: file %s on line %d\r\n", file,
