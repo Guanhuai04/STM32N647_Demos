@@ -1,0 +1,4 @@
+{
+  "device": "STM32N647X0H3Q",
+  "toolchain": "CLANG_GCC"
+}

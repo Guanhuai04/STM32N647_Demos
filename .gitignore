@@ -46,3 +46,6 @@
 **/.vscode/*
 !**/.vscode/
 !**/.vscode/launch.json
+/.metadata/
+
+/.metadata/
