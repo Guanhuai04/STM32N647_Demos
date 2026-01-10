@@ -108,7 +108,9 @@ int main(void) {
 
   BSP_LED_Init(LED_RED);
   BSP_LED_Init(LED_GREEN);
-  BSP_UART_Init_DMA(&huart1, received_data, sizeof(received_data));
+  BSP_UART_Init(&huart1, UART_MODE_DMA);
+  BSP_UART_Register_Receive_Buffer(&huart1, received_data,
+                                   sizeof(received_data));
 
   /* USER CODE END 2 */
 

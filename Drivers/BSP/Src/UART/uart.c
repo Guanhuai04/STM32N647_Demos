@@ -7,12 +7,9 @@ int __io_putchar(int ch) {
   return ch;
 }
 
-#define BSP_UART_MAX    2u
-#define UART_MODE_BASIC 0u
-#define UART_MODE_IT    1u
-#define UART_MODE_DMA   2u
+#define BSP_UART_MAX 5u
 
-typedef struct UART_Slot {
+typedef struct {
   UART_HandleTypeDef *huart;
   uint8_t *buf;
   uint16_t len;
@@ -68,27 +65,32 @@ static void dcache_clean(const void *addr, uint32_t size) {
 #endif
 }
 
-HAL_StatusTypeDef BSP_UART_Init_IT(UART_HandleTypeDef *huart, uint8_t *buf,
-                                   uint16_t len) {
-  slot_add(huart, buf, len, UART_MODE_IT);
-  return HAL_UART_Receive_IT(huart, buf, len);
+void BSP_UART_Init(UART_HandleTypeDef *huart, BSP_UART_Mode_t mode) {
+  slot_add(huart, NULL, 0, mode);
 }
 
-HAL_StatusTypeDef BSP_UART_Init_DMA(UART_HandleTypeDef *huart, uint8_t *buf,
-                                    uint16_t max_len) {
-  slot_add(huart, buf, max_len, UART_MODE_DMA);
-
-  HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle_DMA(huart, buf, max_len);
-  if (status == HAL_OK && huart->hdmarx != NULL) {
-    __HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_HT);
+HAL_StatusTypeDef BSP_UART_Register_Receive_Buffer(UART_HandleTypeDef *huart,
+                                                   uint8_t *buf, uint16_t len) {
+  UART_Slot_t *slot = slot_get(huart);
+  if (slot != NULL) {
+    if (slot->mode == UART_MODE_IT) {
+      return HAL_UART_Receive_IT(huart, buf, len);
+    } else if (slot->mode == UART_MODE_DMA) {
+      HAL_StatusTypeDef status = HAL_UARTEx_ReceiveToIdle_DMA(huart, buf, len);
+      if (status == HAL_OK && huart->hdmarx != NULL) {
+        __HAL_DMA_DISABLE_IT(huart->hdmarx, DMA_IT_HT);
+      }
+      return status;
+    }
   }
-  return status;
+
+  return HAL_ERROR;
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   UART_Slot_t *slot = slot_get(huart);
   if (slot != NULL) {
-    if (slot->mode == UART_MODE_IT) {
+    if (slot->mode == UART_MODE_IT && slot->buf != NULL) {
       BSP_UART_RxCallback(huart, slot->buf, slot->len);
     }
   }
@@ -97,7 +99,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
   UART_Slot_t *slot = slot_get(huart);
   if (slot != NULL) {
-    if (slot->mode == UART_MODE_DMA) {
+    if (slot->mode == UART_MODE_DMA && slot->buf != NULL) {
       dcache_invalidate(slot->buf, Size);
       BSP_UART_RxCallback(huart, slot->buf, Size);
 
@@ -118,6 +120,8 @@ HAL_StatusTypeDef BSP_UART_Transmit(UART_HandleTypeDef *huart,
       return HAL_UART_Transmit_DMA(huart, (uint8_t *)buf, len);
     } else if (slot->mode == UART_MODE_IT) {
       return HAL_UART_Transmit_IT(huart, (uint8_t *)buf, len);
+    } else if (slot->mode == UART_MODE_BASIC) {
+      return HAL_UART_Transmit(huart, (uint8_t *)buf, len, HAL_MAX_DELAY);
     }
   }
 

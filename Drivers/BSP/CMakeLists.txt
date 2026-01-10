@@ -14,6 +14,6 @@ endmacro()
 
 add_bsp_package(LED Src/LED)
 add_bsp_package(NORFLASH Src/NORFlash)
-add_bsp_package(NORFLASH Src/NORFlash)
 add_bsp_package(KEY Src/Key)
 add_bsp_package(UART Src/UART)
+add_bsp_package(SYS Src/SYS)

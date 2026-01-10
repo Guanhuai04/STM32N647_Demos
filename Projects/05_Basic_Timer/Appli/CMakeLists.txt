@@ -26,8 +26,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(STM32_MCU_FLAGS  "-mcpu=cortex-m55 -mfpu=fpv5-d16 -mfloat-abi=hard -mcmse " )
 
 #Linker options
-set(STM32_LINKER_SCRIPT STM32N647XX_LRUN_RAMxspi1.ld)
+set(STM32_LINKER_SCRIPT STM32N647XX_LRUN.ld)
 set(STM32_LINKER_OPTION  )
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(STM32_LINKER_SCRIPT STM32N647XX_ROMxspi2.ld)
+endif()
 
 # Set the project name
 set(CMAKE_PROJECT_NAME 05_Basic_Timer_Appli)
@@ -80,41 +83,32 @@ if((CMAKE_C_STANDARD EQUAL 90) OR (CMAKE_C_STANDARD EQUAL 99))
 endif()
 
 
+function(enable_bsp_module MODULE)
+    set(BSP_USE_${MODULE} ON CACHE BOOL "" FORCE)
+endfunction()
 
-# Specify the output ELF file
-set(TARGET_ELF "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.elf")
-# Command to generate .bin file
-add_custom_command(
-    TARGET ${CMAKE_PROJECT_NAME}
-    POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -O binary ${TARGET_ELF} ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.bin
-    COMMENT "Generating .bin file"
-)
-# Define the paths to the STM32 Signing Tool and the input/output files
-set(SIGNING_TOOL "D:/Program Files/STM32CubeProgrammer/bin/STM32_SigningTool_CLI.exe")
-# Define the input and output files for Appli
-set(APPLI_INPUT "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.bin")
-set(APPLI_OUTPUT "${CMAKE_BINARY_DIR}/Appli-trusted.bin")
-  
-# Add a post-build step to sign the Appli binary
-add_custom_command(
-    TARGET ${CMAKE_PROJECT_NAME}
-    POST_BUILD
-    # Step 1: Create a file with 'y'
-    COMMAND ${CMAKE_COMMAND} -E echo y > "${CMAKE_BINARY_DIR}/input.txt"
-    # Step 2: Run the signing tool, redirecting input from the file
-    COMMAND "${SIGNING_TOOL}" -bin "${APPLI_INPUT}" -nk -of 0x80000000 -t fsbl -o "${APPLI_OUTPUT}" -hv 2.3 -dump "${APPLI_OUTPUT}" < "${CMAKE_BINARY_DIR}/input.txt"
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-    COMMENT "Signing Appli binary: ${APPLI_INPUT} -> ${APPLI_OUTPUT}"
-)
+enable_bsp_module(LED)
+enable_bsp_module(UART)
+enable_bsp_module(SYS)
 
-# Convert the signed Appli .bin back to .elf
-add_custom_command(
-    TARGET ${CMAKE_PROJECT_NAME}
-    POST_BUILD
-    COMMAND arm-none-eabi-objcopy -I binary -O elf32-littlearm -B arm --change-addresses=0x70100000 ${APPLI_OUTPUT} ${CMAKE_BINARY_DIR}/Appli-trusted.elf
-    COMMENT "Converting signed .bin back to .elf in address [0x70100000]"
-)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../../Drivers/BSP bsp_build)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    # Convert the Appli .elf back to .hex
+    set(BINARY_OUTPUT_DIR ${CMAKE_BINARY_DIR}/../../Binary)
+    set(TARGET_ELF "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.elf")
+
+    add_custom_command(
+        TARGET ${CMAKE_PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${BINARY_OUTPUT_DIR}
+        COMMAND arm-none-eabi-objcopy
+                -O ihex
+                # --change-addresses=0x70100400
+                ${TARGET_ELF}
+                ${BINARY_OUTPUT_DIR}/Appli.hex
+        COMMENT "Create Binary directory and convert .bin to .hex"
+    )
+endif()
 
 
