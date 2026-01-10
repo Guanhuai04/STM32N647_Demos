@@ -1,27 +1,7 @@
-/**
- ****************************************************************************************************
- * @file        led.h
- * @author      正点原子团队(ALIENTEK)
- * @version     V1.0
- * @date        2025-01-13
- * @brief       LED驱动代码
- * @license     Copyright (c) 2020-2032, 广州市星翼电子科技有限公司
- ****************************************************************************************************
- * @attention
- *
- * 实验平台:正点原子 N647开发板
- * 在线视频:www.yuanzige.com
- * 技术论坛:www.openedv.com
- * 公司网址:www.alientek.com
- * 购买地址:openedv.taobao.com
- *
- ****************************************************************************************************
- */
+#ifndef __BSP_LED_H
+#define __BSP_LED_H
 
-#ifndef __LED_H
-#define __LED_H
-
-#include <stdint.h>
+#include "stm32n6xx_hal.h"
 
 typedef enum {
   LED1 = 0U,
@@ -30,6 +10,11 @@ typedef enum {
   LED_GREEN = LED2,
   LEDn,
 } Led_TypeDef;
+
+typedef enum {
+  LED_OFF = 0U,
+  LED_ON = 1U,
+} LedState_TypeDef;
 
 /* 引脚定义 */
 #define BSP_LED1_GPIO_PORT GPIOG
@@ -48,6 +33,7 @@ void BSP_LED_DeInit(Led_TypeDef Led);
 void BSP_LED_On(Led_TypeDef Led);
 void BSP_LED_Off(Led_TypeDef Led);
 void BSP_LED_Toggle(Led_TypeDef Led);
-uint32_t BSP_LED_GetState(Led_TypeDef Led);
+void BSP_LED_SetState(Led_TypeDef Led, LedState_TypeDef State);
+LedState_TypeDef BSP_LED_GetState(Led_TypeDef Led);
 
 #endif

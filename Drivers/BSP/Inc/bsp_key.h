@@ -1,3 +1,6 @@
+#ifndef __BSP_KEY_H
+#define __BSP_KEY_H
+
 #include "stm32n6xx.h"
 
 #define KEY_DEBOUNCE_TIME_MS 20U
@@ -23,3 +26,5 @@ typedef enum { KEY_MODE_GPIO = 0U, KEY_MODE_EXTI = 1U } KeyMode_TypeDef;
 
 uint32_t BSP_KEY_GetState(Key_TypeDef Button);
 void BSP_KEY_Callback(Key_TypeDef Button);
+
+#endif
