@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -58,12 +59,10 @@ static void SystemIsolation_Config(void);
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
-{
-
+ * @brief  The application entry point.
+ * @retval int
+ */
+int main(void) {
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -80,7 +79,8 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  BSP_LED_Init(LED_RED);
+  BSP_LED_Init(LED_GREEN);
   /* USER CODE END Init */
 
   /* USER CODE BEGIN SysInit */
@@ -91,8 +91,6 @@ int main(void)
   MX_GPIO_Init();
   SystemIsolation_Config();
   /* USER CODE BEGIN 2 */
-  BSP_LED_Init(LED_RED);
-  BSP_LED_Init(LED_GREEN);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -112,16 +110,14 @@ int main(void)
 }
 
 /**
-  * @brief RIF Initialization Function
-  * @param None
-  * @retval None
-  */
-  static void SystemIsolation_Config(void)
-{
+ * @brief RIF Initialization Function
+ * @param None
+ * @retval None
+ */
+static void SystemIsolation_Config(void) {
+  /* USER CODE BEGIN RIF_Init 0 */
 
-/* USER CODE BEGIN RIF_Init 0 */
-
-/* USER CODE END RIF_Init 0 */
+  /* USER CODE END RIF_Init 0 */
 
   /* set all required IPs as secure privileged */
   __HAL_RCC_RIFSC_CLK_ENABLE();
@@ -129,19 +125,20 @@ int main(void)
   /* RIF-Aware IPs Config */
 
   /* set up PWR configuration */
-  HAL_PWR_ConfigAttributes(PWR_ITEM_0,PWR_SEC_NPRIV);
+  HAL_PWR_ConfigAttributes(PWR_ITEM_0, PWR_SEC_NPRIV);
 
   /* set up GPIO configuration */
-  HAL_GPIO_ConfigPinAttributes(GPIOE,GPIO_PIN_10,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
-  HAL_GPIO_ConfigPinAttributes(GPIOG,GPIO_PIN_10,GPIO_PIN_SEC|GPIO_PIN_NPRIV);
+  // HAL_GPIO_ConfigPinAttributes(GPIOE, GPIO_PIN_10,
+  //                              GPIO_PIN_SEC | GPIO_PIN_NPRIV);
+  // HAL_GPIO_ConfigPinAttributes(GPIOG, GPIO_PIN_10,
+  //                              GPIO_PIN_SEC | GPIO_PIN_NPRIV);
 
-/* USER CODE BEGIN RIF_Init 1 */
+  /* USER CODE BEGIN RIF_Init 1 */
 
-/* USER CODE END RIF_Init 1 */
-/* USER CODE BEGIN RIF_Init 2 */
+  /* USER CODE END RIF_Init 1 */
+  /* USER CODE BEGIN RIF_Init 2 */
 
-/* USER CODE END RIF_Init 2 */
-
+  /* USER CODE END RIF_Init 2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -149,11 +146,10 @@ int main(void)
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
-{
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
+void Error_Handler(void) {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
@@ -163,14 +159,13 @@ void Error_Handler(void)
 }
 #ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
-void assert_failed(uint8_t *file, uint32_t line)
-{
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
+void assert_failed(uint8_t* file, uint32_t line) {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line
      number, ex: printf("Wrong parameters value: file %s on line %d\r\n", file,

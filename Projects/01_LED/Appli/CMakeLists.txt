@@ -103,7 +103,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
         COMMAND ${CMAKE_COMMAND} -E make_directory ${BINARY_OUTPUT_DIR}
         COMMAND arm-none-eabi-objcopy
                 -O ihex
-                --change-addresses=0x70100400
+                # --change-addresses=0x70100400
                 ${TARGET_ELF}
                 ${BINARY_OUTPUT_DIR}/Appli.hex
         COMMENT "Create Binary directory and convert .bin to .hex"
