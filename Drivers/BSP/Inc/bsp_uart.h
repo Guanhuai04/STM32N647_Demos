@@ -3,6 +3,9 @@
 
 #include "stm32n6xx_hal.h"
 
+#define BSP_UART_DEBUG_HUART huart1
+extern UART_HandleTypeDef BSP_UART_DEBUG_HUART;
+
 HAL_StatusTypeDef BSP_UART_Init_IT(UART_HandleTypeDef *huart, uint8_t *buf,
                                    uint16_t len);
 HAL_StatusTypeDef BSP_UART_Init_DMA(UART_HandleTypeDef *huart, uint8_t *buf,

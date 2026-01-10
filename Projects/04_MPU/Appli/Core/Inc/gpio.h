@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file           : extmem_manager.h
-  * @version        : 1.0.0
-  * @brief          : Header for secure_manager_api.c file.
+  * @file    gpio.h
+  * @brief   This file contains all the function prototypes for
+  *          the gpio.c file
   ******************************************************************************
   * @attention
   *
@@ -17,51 +17,33 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MX_EXTMEM__H__
-#define __MX_EXTMEM__H__
+#ifndef __GPIO_H__
+#define __GPIO_H__
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32_extmem_conf.h"
+#include "main.h"
 
-/* USER CODE BEGIN INCLUDE */
+/* USER CODE BEGIN Includes */
 
-/* USER CODE END INCLUDE */
+/* USER CODE END Includes */
 
-/* Private variables ---------------------------------------------------------*/
-/* USER CODE BEGIN PV */
+/* USER CODE BEGIN Private defines */
 
-/* USER CODE END PV */
+/* USER CODE END Private defines */
 
-/* Private function prototypes -----------------------------------------------*/
-/* USER CODE BEGIN PFP */
+void MX_GPIO_Init(void);
 
-/* USER CODE END PFP */
+/* USER CODE BEGIN Prototypes */
 
-/*
- * -- Insert your variables declaration here --
- */
-/* USER CODE BEGIN VARIABLES */
-
-/* USER CODE END VARIABLES */
-
-void MX_EXTMEM_MANAGER_Init(void);
-
-/*
- * -- Insert functions declaration here --
- */
-/* USER CODE BEGIN FD */
-
-/* USER CODE END FD */
+/* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __MX_EXTMEM__H__ */
+#endif /*__ GPIO_H__ */
 

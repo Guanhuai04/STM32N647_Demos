@@ -1,5 +1,11 @@
 #include "bsp_uart.h"
 #include <stdint.h>
+#include <stdio.h>
+
+int __io_putchar(int ch) {
+  HAL_UART_Transmit(&BSP_UART_DEBUG_HUART, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+  return ch;
+}
 
 #define BSP_UART_MAX    2u
 #define UART_MODE_BASIC 0u
